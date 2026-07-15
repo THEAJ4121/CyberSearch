@@ -1,0 +1,4 @@
+/* App.css is intentionally empty.
+   All global styles live in index.css (Tailwind + design system).
+   Component-specific styles go directly in the component files using Tailwind classes.
+   This keeps styles close to the markup — a React best practice. */

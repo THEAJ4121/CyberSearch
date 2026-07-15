@@ -1,0 +1,193 @@
+/* ============================================================
+   CYBER SEARCH — Global Design System
+   ============================================================
+   Layer order matters for Tailwind:
+   @tailwind base     → Resets (like a clean canvas)
+   @tailwind components → Our custom component classes
+   @tailwind utilities  → Tailwind utility classes (highest priority)
+   ============================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   BASE LAYER — Global resets and defaults
+   @layer base: lowest priority, safe to override with utilities
+   ============================================================ */
+@layer base {
+  /* CSS Custom Properties (variables) for our color tokens.
+     We define them on :root so every element inherits them. */
+  :root {
+    --cyber-black: #0a0a0f;
+    --cyber-dark: #0d0d1a;
+    --cyber-gray: #1a1a2e;
+    --neon-blue: #00d4ff;
+    --neon-green: #00ff88;
+    --neon-purple: #bf00ff;
+    --neon-pink: #ff0080;
+    --cyber-text: #c8d6e5;
+    --cyber-muted: #5a6a7a;
+  }
+
+  /* Universal box-sizing reset — prevents width calculation bugs.
+     Without this, padding ADDS to width. With this, it's INCLUDED. */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Smoother scrolling for anchor links */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: "Rajdhani", sans-serif;
+    background-color: var(--cyber-black);
+    color: var(--cyber-text);
+    min-height: 100vh;
+    /* Subtle scanline texture — makes it feel more cyber */
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 212, 255, 0.015) 2px,
+      rgba(0, 212, 255, 0.015) 4px
+    );
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Headings use the Orbitron sci-fi font */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Orbitron", monospace;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #ffffff;
+  }
+
+  /* Style the scrollbar to match our theme */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--cyber-dark);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--neon-blue);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--neon-purple);
+  }
+
+  /* Focus ring — accessibility (keyboard navigation) */
+  *:focus-visible {
+    outline: 2px solid var(--neon-blue);
+    outline-offset: 2px;
+  }
+}
+
+/* ============================================================
+   COMPONENTS LAYER — Reusable CSS class patterns
+   These are higher priority than base, lower than utilities.
+   Think of these as "pre-built combos" of utility classes.
+   ============================================================ */
+@layer components {
+  /* --- Glassmorphism Card ---
+     Glassmorphism = frosted glass effect using backdrop-filter.
+     It blurs whatever is BEHIND the element.
+     Real-world use: Apple iOS, Windows 11 UI, modern dashboards */
+  .glass-card {
+    background: rgba(13, 13, 26, 0.7); /* semi-transparent dark bg */
+    backdrop-filter: blur(12px); /* frosted glass blur */
+    -webkit-backdrop-filter: blur(12px); /* Safari support */
+    border: 1px solid rgba(0, 212, 255, 0.15); /* subtle neon border */
+    border-radius: 12px;
+  }
+
+  /* --- Neon Glow Border (animated) ---
+     Used for featured cards and highlighted elements */
+  .neon-border {
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    box-shadow:
+      0 0 5px rgba(0, 212, 255, 0.3),
+      inset 0 0 5px rgba(0, 212, 255, 0.05);
+    transition:
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
+  }
+  .neon-border:hover {
+    border-color: rgba(0, 212, 255, 0.8);
+    box-shadow:
+      0 0 15px rgba(0, 212, 255, 0.5),
+      0 0 30px rgba(0, 212, 255, 0.2),
+      inset 0 0 10px rgba(0, 212, 255, 0.05);
+  }
+
+  /* --- Primary Button --- */
+  .btn-primary {
+    @apply px-6 py-3 font-rajdhani font-semibold text-cyber-black bg-neon-blue
+           rounded-lg transition-all duration-300 uppercase tracking-widest
+           hover:bg-white hover:shadow-neon-blue active:scale-95;
+  }
+
+  /* --- Secondary (ghost) Button --- */
+  .btn-ghost {
+    @apply px-6 py-3 font-rajdhani font-semibold text-neon-blue
+           border border-neon-blue rounded-lg transition-all duration-300
+           uppercase tracking-widest hover:bg-neon-blue hover:text-cyber-black
+           active:scale-95;
+  }
+
+  /* --- Neon Text (gradient) --- */
+  .neon-text {
+    background: linear-gradient(90deg, #00d4ff, #bf00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .neon-text-green {
+    background: linear-gradient(90deg, #00ff88, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* --- Search Input --- */
+  .search-input {
+    @apply w-full bg-cyber-gray border border-cyber-border text-cyber-text
+           font-rajdhani placeholder-cyber-muted px-4 py-3 rounded-lg
+           transition-all duration-300 outline-none
+           focus:border-neon-blue focus:shadow-neon-blue;
+  }
+
+  /* --- Section Container --- */
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* --- Category Badge/Tag --- */
+  .cyber-badge {
+    @apply inline-flex items-center gap-1 px-3 py-1 text-xs font-rajdhani
+           font-semibold uppercase tracking-wider rounded-full
+           bg-cyber-gray border border-cyber-border text-neon-blue
+           transition-all duration-200 hover:border-neon-blue hover:bg-cyber-gray;
+  }
+}
