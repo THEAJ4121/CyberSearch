@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiLock, FiMail, FiUser, FiArrowLeft, FiActivity } from 'react-icons/fi';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 function RegisterPage() {
   const { register } = useAuth();
@@ -16,7 +19,7 @@ function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -32,20 +35,22 @@ function RegisterPage() {
 
     setLoading(true);
 
-    // Mock API registration process
-    setTimeout(() => {
-      setLoading(false);
-      register(
-        {
-          id: 2,
-          email: formData.email,
-          username: formData.username,
-          role: 'user',
-        },
-        'mock-jwt-auth-token-67890'
-      );
+    try {
+      const response = await axios.post(`${API_URL}/auth/register`, {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      const { user, token } = response.data;
+      register(user, token);
       navigate('/');
-    }, 800);
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.error || 'Registration sequence interrupted.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiShield, FiLock, FiMail, FiArrowLeft } from 'react-icons/fi';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 function LoginPage() {
   const { login } = useAuth();
@@ -14,33 +17,32 @@ function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     if (!formData.email || !formData.password) {
-      setError('Please fill in all security fields.');
+      setError('Please fill in all security field protocols.');
       return;
     }
 
     setLoading(true);
 
-    // Mock API Auth Process
-    setTimeout(() => {
-      setLoading(false);
-      // Let's create an admin account for demo purposes, or regular user
-      const isAdmin = formData.email.toLowerCase().includes('admin');
-      login(
-        {
-          id: 1,
-          email: formData.email,
-          username: formData.email.split('@')[0],
-          role: isAdmin ? 'admin' : 'user',
-        },
-        'mock-jwt-auth-token-12345'
-      );
+    try {
+      const response = await axios.post(`${API_URL}/auth/login`, {
+        email: formData.email,
+        password: formData.password,
+      });
+
+      const { user, token } = response.data;
+      login(user, token);
       navigate('/');
-    }, 800);
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.error || 'Database connection timeout.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

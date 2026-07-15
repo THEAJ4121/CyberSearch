@@ -1,0 +1,44 @@
+name: CyberSearch CI/CD Integration
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  validate-project:
+    name: Lint & Build Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out code from GitHub
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Install Node environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      # Step 3: Clean install frontend and run build test
+      - name: Install Frontend Dependencies
+        run: npm ci
+
+      - name: Verify Frontend Compilation
+        run: npm run build
+        env:
+          VITE_API_URL: https://mockapi.cybersearch.io/api
+
+      # Step 4: Validate server codebase
+      - name: Install Server Dependencies
+        run: |
+          cd server
+          npm ci
+
+      - name: Verify Server Script
+        run: |
+          cd server
+          node -c index.js # Syntax check JavaScript file
