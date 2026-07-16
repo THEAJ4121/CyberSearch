@@ -1,7 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const pool = require('../db');
+const { query } = require('../db');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'cyberpunk_default_development_secret_key_99';
@@ -14,6 +15,7 @@ function authenticateToken(req, res, next) {
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
+    logger.warn(`Unauthorized access attempt to ${req.originalUrl}`);
     return res.status(401).json({ error: 'ACCESS TERMINATED: Missing decryption token.' });
   }
 
@@ -38,8 +40,7 @@ router.post('/register', async (req, res, next) => {
   }
 
   try {
-    // Check if operator credentials exist
-    const [existing] = await pool.query(
+    const [existing] = await query(
       'SELECT id FROM users WHERE email = ? OR username = ?',
       [email, username]
     );
@@ -48,25 +49,23 @@ router.post('/register', async (req, res, next) => {
       return res.status(409).json({ error: 'CONFLICT DETECTED: Username or email already registered on database.' });
     }
 
-    // Securely hash secret passwords
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // Insert to DB
-    const [result] = await pool.query(
+    const [result] = await query(
       'INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)',
       [username, email, passwordHash, 'user']
     );
 
     const insertedId = result.insertId;
 
-    // Generate session JWT
     const token = jwt.sign(
       { id: insertedId, email, username, role: 'user' },
       JWT_SECRET,
       { expiresIn: '24h' }
     );
 
+    logger.success(`New operator logged in system: ${username}`);
     res.status(201).json({
       message: 'Node initialized successfully.',
       token,
@@ -89,7 +88,7 @@ router.post('/login', async (req, res, next) => {
   }
 
   try {
-    const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    const [users] = await query('SELECT * FROM users WHERE email = ?', [email]);
     if (users.length === 0) {
       return res.status(401).json({ error: 'INVALID AUTHENTICATION: Credentials not matching.' });
     }
@@ -123,7 +122,7 @@ router.post('/login', async (req, res, next) => {
  */
 router.get('/me', authenticateToken, async (req, res, next) => {
   try {
-    const [users] = await pool.query(
+    const [users] = await query(
       'SELECT id, username, email, role, created_at FROM users WHERE id = ?',
       [req.user.id]
     );

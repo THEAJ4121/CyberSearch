@@ -1,0 +1,34 @@
+name: CyberSearch CI Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  validate-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+
+      - name: Install Root Dependencies (Frontend)
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Ensure Production Build Succeeds
+        run: npm run build
+
+      - name: Install Backend Dependencies
+        working-directory: ./server
+        run: npm install

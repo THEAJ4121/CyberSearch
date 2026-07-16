@@ -1,0 +1,66 @@
+version: "3.8"
+
+services:
+  # The Node.js Express Backend
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - NODE_ENV=production
+      - DB_HOST=db
+      - DB_USER=cyber_user
+      - DB_PASSWORD=cyber_secure_pass
+      - DB_NAME=cybersearch
+      - DB_PORT=3306
+      - JWT_SECRET=docker_local_development_secret_99
+      - FRONTEND_URL=http://localhost:4173
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - cyber_net
+
+  # The React Vite Frontend (Nginx Proxy)
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4173:80"
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+    depends_on:
+      - api
+    networks:
+      - cyber_net
+
+  # The MySQL Database
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_super_secret
+      MYSQL_DATABASE: cybersearch
+      MYSQL_USER: cyber_user
+      MYSQL_PASSWORD: cyber_secure_pass
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - cyber_net
+
+networks:
+  cyber_net:
+    driver: bridge
+
+volumes:
+  db_data:

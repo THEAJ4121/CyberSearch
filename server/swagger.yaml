@@ -1,0 +1,102 @@
+openapi: 3.0.0
+info:
+  title: CyberSearch Backend API
+  description: Core authentication layer and data retrieval architecture for the CyberSearch suite. Heavily fortified via express-rate-limit and Helmet.
+  version: 1.0.0
+  contact:
+    email: admin@cybersearch.com
+servers:
+  - url: http://localhost:8000/api
+    description: Local Dev Server
+  - url: https://cybersearch-api.onrender.com/api
+    description: Production Server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new operator node (User)
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - email
+                - password
+              properties:
+                username:
+                  type: string
+                  example: neo_hacker
+                email:
+                  type: string
+                  example: neo@matrix.net
+                password:
+                  type: string
+                  format: password
+      responses:
+        "201":
+          description: Created successfully
+        "400":
+          description: Missing payloads
+        "409":
+          description: Email or username collision
+
+  /auth/login:
+    post:
+      summary: Authenticate and retrieve JWT
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Login successful, JWT attached
+        "401":
+          description: Invalid credentials
+
+  /auth/me:
+    get:
+      summary: Retrieves current secure session footprint
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Valid session context
+        "401":
+          description: Missing token
+        "403":
+          description: Invalid or expired token
+
+  /health:
+    get:
+      summary: System diagnostic payload
+      tags:
+        - Telemetry
+      responses:
+        "200":
+          description: Deep OS/DB metrics JSON

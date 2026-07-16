@@ -3,46 +3,41 @@ const helmet = require('helmet');
 const cors = require('cors');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
-const morgan = require('morgan');
+const crypto = require('crypto');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 require('dotenv').config();
 
+const logger = require('./utils/logger');
+const { pool } = require('./db');
+const { runMigrations } = require('./database/migrate');
 const { router: authRouter } = require('./routes/auth');
-const pool = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-// ── 1. SECURITY HEADERS (helmet) ──
-// Helps secure Express apps by setting various HTTP headers
-app.use(helmet());
+// ── 1. SECURITY & PERFORMANCE MIDDLEWARE ──
+app.use((req, res, next) => {
+  req.id = crypto.randomUUID();
+  res.setHeader('X-Request-Id', req.id);
+  next();
+});
 
-// ── 2. COMPRESSION (compression) ──
-// Decreases the size of the response body to increase serving speed
+app.use(helmet());
 app.use(compression());
 
-// ── 3. LOGGING (morgan) ──
-// HTTP request logger. Use 'combined' format for standard Apache production logs, 'dev' for local testing.
-if (NODE_ENV === 'production') {
-  app.use(morgan('combined'));
-} else {
-  app.use(morgan('dev'));
-}
-
-// Enable standard JSON/URLEncoded support
-app.use(express.json({ limit: '10kb' })); // Restrict huge payloads (DOS protection)
+app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-// ── 4. CORS (cross-origin resource sharing) ──
-// Restrict incoming API requests to the allowed frontend domains
+// CORS strictly bound to frontend URL for CSRF protection
 const allowedOrigins = [
-  'http://localhost:5173', // Local Vite development
-  process.env.FRONTEND_URL, // Production Vercel domain (injected in env)
+  'http://localhost:5173',
+  process.env.FRONTEND_URL,
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow server-to-server or curl requests (origin is undefined)
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -52,77 +47,120 @@ app.use(cors({
   credentials: true,
 }));
 
-// ── 5. RATE LIMITING (express-rate-limit) ──
-// Limits repeated requests to public endpoints (e.g. login/register) to prevent brute-force attacks
+// DDoS Protection
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per 15 minutes
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  message: {
-    error: 'Too many requests generated from this IP. Session suspended for 15 minutes.'
-  }
+  windowMs: 15 * 60 * 1000, 
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use('/api/', apiLimiter);
 
-// ── 6. ROUTES ──
+// Custom Request Logger hook
+app.use((req, res, next) => {
+  if (NODE_ENV !== 'production' && req.path !== '/api/health') {
+    logger.info(`[${req.method}] ${req.path} [ReqID: ${req.id.split('-')[0]}]`);
+  }
+  next();
+});
+
+// ── 2. MOUNT ROUTES ──
+try {
+  const swaggerDocument = YAML.load('./swagger.yaml');
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+} catch (e) {
+  logger.warn('Swagger specs unreadable. Skipping OpenApi route mapping.');
+}
+
 app.use('/api/auth', authRouter);
 
-/**
- * @route GET /api/health
- * @desc  Verifies both express and SQL connection status
- */
+// ── 3. HEALTH ENDPOINT (Enterprise Level) ──
 app.get('/api/health', async (req, res) => {
   try {
     const start = Date.now();
-    await pool.query('SELECT 1'); // Test active db query roundtrip
-    const duration = Date.now() - start;
+    await pool.query('SELECT 1');
+    const dbLatency = Date.now() - start;
+    const memory = process.memoryUsage();
 
     res.status(200).json({
-      status: 'UP',
+      status: 'healthy',
       environment: NODE_ENV,
-      timestamp: new Date().toISOString(),
-      database: {
-        status: 'CONNECTED',
-        latency: `${duration}ms`
-      }
+      version: '1.0.0',
+      database: 'connected',
+      migrations: app.locals.migrationStatus || 'unknown',
+      uptime: process.uptime(),
+      responseTime: `${dbLatency}ms`,
+      memoryUsage: `${Math.round(memory.rss / 1024 / 1024)}mb (RSS)`,
+      nodeVersion: process.version,
+      timestamp: new Date().toISOString()
     });
   } catch (err) {
-    res.status(500).json({
-      status: 'DEGRADED',
-      environment: NODE_ENV,
-      timestamp: new Date().toISOString(),
-      database: {
-        status: 'DISCONNECTED',
-        error: err.message
-      }
-    });
+    logger.error('Health Check Failed', err);
+    res.status(503).json({ status: 'degraded', database: 'disconnected', error: err.message });
   }
 });
 
-// Custom 404 Route for unsupported endpoints
+// 404 Catcher
 app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint terminal mismatch. Path not found.' });
 });
 
-// ── 7. GLOBAL ERROR HANDLING MIDDLEWARE ──
-// Catches all synchronous/asynchronous controller faults
+// ── 4. ERROR HANDLING ──
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  console.error('🔥 CRITICAL ERROR DECAY:', err.stack || err.message);
-
+  logger.error(`Runtime Exception in route ${req.path}`, err);
   const status = err.statusCode || 500;
-  const message = NODE_ENV === 'production' 
-    ? 'Internal Server Error' 
-    : err.message || 'Fatal system decay.';
-
   res.status(status).json({
     status: 'error',
-    error: message,
-    ...(NODE_ENV === 'development' && { stack: err.stack })
+    error: NODE_ENV === 'production' ? 'Internal server error' : err.message
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`📡 CYBERSEARCH CONSOLE ACTIVE ON PORT: ${PORT} [Mode: ${NODE_ENV}]`);
+// ── 5. APPLICATION LIFECYCLE ──
+// Graceful shutdown handling for K8s / Render scaling
+let server;
+
+async function bootstrap() {
+  try {
+    const migrationResult = await runMigrations(pool);
+    app.locals.migrationStatus = migrationResult.status;
+
+    server = app.listen(PORT, () => {
+      logger.startup({
+        env: NODE_ENV,
+        port: PORT,
+        dbStatus: 'Connected pool',
+        migrations: `Up to date (+${migrationResult.newlyApplied})`
+      });
+    });
+  } catch (err) {
+    logger.error('CRITICAL BOOT FAILURE. Application aborting.', err);
+    process.exit(1);
+  }
+}
+
+bootstrap();
+
+// Process Event Traps (Graceful Exit)
+const shutdown = async (signal) => {
+  logger.warn(`Received ${signal}. Draining HTTP requests...`);
+  if (server) {
+    server.close(async () => {
+      logger.info('HTTP server closed. Terminating database active connections.');
+      try {
+        await pool.end();
+        logger.success('Backend offline gracefully.');
+        process.exit(0);
+      } catch (err) {
+        logger.error('Failed to close DB pool cleanly', err);
+        process.exit(1);
+      }
+    });
+  }
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('unhandledRejection', (reason) => {
+  logger.error('UNHANDLED PROMISE REJECTION', reason);
 });
