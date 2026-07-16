@@ -2,16 +2,25 @@ const mysql = require('mysql2/promise');
 const logger = require('./utils/logger');
 require('dotenv').config();
 
+// ── TiDB Cloud Enterprise TLS Enforcement ──
+// Serverless database distributed networks aggressively intercept open packets.
+// Thus, executing without TLS minimums exposes vectors to man-in-the-middle attacks.
+const sslConfig = process.env.DB_SSL === 'true' ? {
+  minVersion: 'TLSv1.2',
+  rejectUnauthorized: true
+} : undefined;
+
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || process.env.MYSQLHOST || 'localhost',
-  user: process.env.DB_USER || process.env.MYSQLUSER || 'root',
-  password: process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || '',
-  database: process.env.DB_NAME || process.env.MYSQLDATABASE || 'cybersearch',
-  port: parseInt(process.env.DB_PORT || process.env.MYSQLPORT || '3306', 10),
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'cybersearch',
+  port: parseInt(process.env.DB_PORT || '4000', 10), // Adapted to TiDB standard port
+  ssl: sslConfig, // Dynamic security injection
   waitForConnections: true,
-  connectionLimit: 15, // Slightly higher for enterprise concurrency
+  connectionLimit: 15,
   queueLimit: 0,
-  enableKeepAlive: true,
+  enableKeepAlive: true, // Prevents sudden socket deaths in serverless hibernation states
   keepAliveInitialDelay: 10000,
 });
 
@@ -25,12 +34,12 @@ async function query(sql, params) {
     const [results, fields] = await pool.query(sql, params);
     const duration = Date.now() - start;
     
-    // Performance alerting for slow queries overhead
+    // Performance alerting for slow querying overhead natively tracking queries against TiKV
     if (duration > 200) {
       logger.warn(`SLOW QUERY DETECTED [${duration}ms]: ${sql.substring(0, 50)}...`);
     }
     
-    return [results, fields]; // Match mysql2 array destructuring exactly
+    return [results, fields];
   } catch (err) {
     logger.error(`Query Execution Failed: ${err.message}`, err);
     throw err;
