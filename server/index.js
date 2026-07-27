@@ -68,7 +68,7 @@ app.use((req, res, next) => {
 try {
   const swaggerDocument = YAML.load('./swagger.yaml');
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-} catch (e) {
+} catch {
   logger.warn('Swagger specs unreadable. Skipping OpenApi route mapping.');
 }
 

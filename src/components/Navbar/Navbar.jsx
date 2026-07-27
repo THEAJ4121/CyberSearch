@@ -25,7 +25,7 @@ function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 20);
+    const onScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -41,36 +41,33 @@ function Navbar() {
   };
 
   const navLinkClass = ({ isActive }) =>
-    `relative text-sm font-rajdhani font-semibold uppercase tracking-widest transition-colors duration-200 ${
-      isActive ? 'text-neon-blue' : 'text-cyber-muted hover:text-cyber-text'
+    `relative text-sm font-medium transition-colors duration-200 ${
+      isActive ? 'text-primary' : 'text-text-muted hover:text-text-main'
     }`;
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-cyber-black/90 backdrop-blur-md border-b border-cyber-border'
+          ? 'bg-background/80 backdrop-blur-lg border-b border-border shadow-sm'
           : 'bg-transparent'
       }`}
     >
-      <div className="section-container">
+      <div className="container-base">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="relative">
-              <FiShield className="text-neon-blue w-7 h-7" />
-              <div className="absolute inset-0 text-neon-blue blur-sm opacity-50">
-                <FiShield className="w-7 h-7" />
-              </div>
+            <div className="relative flex items-center justify-center bg-surface p-1.5 rounded-lg border border-border group-hover:border-primary/50 transition-colors">
+              <FiShield className="text-primary w-5 h-5 shadow-glow-sm" />
             </div>
-            <span className="font-orbitron font-black text-xl tracking-widest">
-              <span className="text-white">CYBER</span>
-              <span className="text-neon-blue">SEARCH</span>
+            <span className="font-display font-semibold text-lg tracking-tight">
+              <span className="text-text-main">Cyber</span>
+              <span className="text-primary font-bold">Search</span>
             </span>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-6 bg-surface/40 backdrop-blur-md px-6 py-1.5 rounded-full border border-border/60">
             {NAV_LINKS.map((link) => (
               <NavLink key={link.to} to={link.to} className={navLinkClass} end={link.to === '/'}>
                 {({ isActive }) => (
@@ -78,8 +75,8 @@ function Navbar() {
                     {link.label}
                     {isActive && (
                       <motion.div
-                        layoutId="nav-indicator"
-                        className="absolute -bottom-1 left-0 right-0 h-0.5 bg-neon-blue"
+                        layoutId="nav-indicator-desktop"
+                        className="absolute -bottom-1.5 left-0 right-0 h-0.5 bg-primary rounded-full shadow-glow-sm"
                       />
                     )}
                   </>
@@ -90,39 +87,39 @@ function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <button onClick={() => setIsSearchOpen((v) => !v)} className="p-2 text-cyber-muted hover:text-neon-blue transition-colors" aria-label="Toggle search">
-              <FiSearch className="w-5 h-5" />
+            <button onClick={() => setIsSearchOpen((v) => !v)} className="p-2 text-text-muted hover:text-primary transition-colors bg-surface rounded-full border border-border hover:border-primary/50" aria-label="Toggle search">
+              <FiSearch className="w-4 h-4" />
             </button>
-            <button onClick={toggleTheme} className="p-2 text-cyber-muted hover:text-neon-blue transition-colors" aria-label="Toggle theme">
-              {isDark ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
+            <button onClick={toggleTheme} className="p-2 text-text-muted hover:text-primary transition-colors bg-surface rounded-full border border-border hover:border-primary/50" aria-label="Toggle theme">
+              {isDark ? <FiSun className="w-4 h-4" /> : <FiMoon className="w-4 h-4" />}
             </button>
             {isAuthenticated ? (
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-rajdhani text-cyber-text">{user?.username || 'User'}</span>
-                <button onClick={logout} className="p-2 text-cyber-muted hover:text-neon-pink transition-colors"><FiLogOut className="w-4 h-4" /></button>
+              <div className="flex items-center gap-3 bg-surface pl-3 pr-1 py-1 rounded-full border border-border">
+                <span className="text-sm font-medium text-text-main max-w-[100px] truncate">{user?.username || 'User'}</span>
+                <button onClick={logout} className="p-1.5 bg-background rounded-full text-text-muted hover:text-red-400 transition-colors border border-border/50 hover:border-red-400/30"><FiLogOut className="w-4 h-4" /></button>
               </div>
             ) : (
-              <>
-                <Link to="/login" className="btn-ghost py-1.5 px-4 text-xs">Login</Link>
-                <Link to="/register" className="btn-primary py-1.5 px-4 text-xs">Register</Link>
-              </>
+              <div className="flex items-center gap-2">
+                <Link to="/login" className="btn-ghost">Log in</Link>
+                <Link to="/register" className="btn-primary">Sign up</Link>
+              </div>
             )}
           </div>
 
           {/* Mobile Toggle */}
-          <button className="md:hidden p-2 text-cyber-muted hover:text-neon-blue" onClick={() => setIsMobileOpen((v) => !v)}>
-            {isMobileOpen ? <FiX className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
+          <button className="md:hidden p-2 text-text-muted hover:text-primary active:scale-95 transition-transform bg-surface rounded-lg border border-border" onClick={() => setIsMobileOpen((v) => !v)}>
+            {isMobileOpen ? <FiX className="w-5 h-5" /> : <FiMenu className="w-5 h-5" />}
           </button>
         </div>
 
         {/* Desktop Search Dropdown */}
         <AnimatePresence>
           {isSearchOpen && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-              <form onSubmit={handleSearch} className="pb-4">
-                <div className="relative">
-                  <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-cyber-muted w-5 h-5" />
-                  <input autoFocus type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search tools, exploits, frameworks..." className="search-input pl-12" />
+            <motion.div initial={{ opacity: 0, height: 0, y: -10 }} animate={{ opacity: 1, height: 'auto', y: 0 }} exit={{ opacity: 0, height: 0, y: -10 }} transition={{ duration: 0.2 }} className="overflow-hidden border-t border-border mt-1">
+              <form onSubmit={handleSearch} className="py-4">
+                <div className="relative max-w-2xl mx-auto">
+                  <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-primary w-5 h-5" />
+                  <input autoFocus type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search tools, exploits, frameworks..." className="w-full bg-surface/80 backdrop-blur-md border border-border text-text-main text-base placeholder-text-muted px-4 py-3 pl-12 rounded-xl transition-all duration-300 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 shadow-glow-sm" />
                 </div>
               </form>
             </motion.div>
@@ -133,32 +130,35 @@ function Navbar() {
       {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileOpen && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="md:hidden bg-cyber-dark border-t border-cyber-border">
-            <div className="section-container py-4 space-y-4">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="md:hidden bg-background/95 backdrop-blur-xl border-t border-border mt-1 shadow-2xl overflow-hidden h-[calc(100vh-4rem)]">
+            <div className="container-base py-6 space-y-6 flex flex-col h-full">
               <form onSubmit={handleSearch}>
                 <div className="relative">
-                  <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-cyber-muted w-5 h-5" />
-                  <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search tools..." className="search-input pl-12" />
+                  <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted w-5 h-5" />
+                  <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search tools..." className="input-base pl-12 py-3 text-base" />
                 </div>
               </form>
-              <nav className="flex flex-col gap-1">
+              <nav className="flex flex-col gap-2 flex-1">
                 {NAV_LINKS.map((link) => (
                   <NavLink key={link.to} to={link.to} end={link.to === '/'} onClick={() => setIsMobileOpen(false)}
-                    className={({ isActive }) => `px-4 py-3 rounded-lg font-rajdhani font-semibold uppercase tracking-wider text-sm transition-colors ${isActive ? 'bg-cyber-gray text-neon-blue' : 'text-cyber-text hover:bg-cyber-gray'}`}>
+                    className={({ isActive }) => `px-4 py-3 rounded-lg font-medium tracking-wide text-base transition-colors ${isActive ? 'bg-primary/10 text-primary border border-primary/20' : 'text-text-main hover:bg-surface'}`}>
                     {link.label}
                   </NavLink>
                 ))}
               </nav>
-              <div className="flex items-center gap-3 pt-2 border-t border-cyber-border">
-                <button onClick={toggleTheme} className="p-2 text-cyber-muted hover:text-neon-blue">
-                  {isDark ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
-                </button>
+              <div className="flex flex-col gap-4 pt-6 border-t border-border pb-8">
+                <div className="flex justify-between items-center px-2">
+                  <span className="text-text-muted text-sm font-medium">Theme</span>
+                  <button onClick={toggleTheme} className="p-2 bg-surface rounded-full text-text-main border border-border">
+                    {isDark ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
+                  </button>
+                </div>
                 {isAuthenticated ? (
-                  <button onClick={logout} className="flex items-center gap-1 text-sm text-neon-pink font-rajdhani"><FiLogOut /> Logout</button>
+                  <button onClick={logout} className="btn-secondary w-full justify-between py-3"><span className="text-text-main">Logout ({user?.username})</span><FiLogOut className="text-red-400" /></button>
                 ) : (
-                  <div className="flex gap-2 flex-1">
-                    <Link to="/login" onClick={() => setIsMobileOpen(false)} className="btn-ghost py-1.5 text-xs flex-1 text-center">Login</Link>
-                    <Link to="/register" onClick={() => setIsMobileOpen(false)} className="btn-primary py-1.5 text-xs flex-1 text-center">Register</Link>
+                  <div className="flex flex-col gap-3">
+                    <Link to="/login" onClick={() => setIsMobileOpen(false)} className="btn-secondary py-3 text-base">Log in</Link>
+                    <Link to="/register" onClick={() => setIsMobileOpen(false)} className="btn-primary py-3 text-base">Sign up</Link>
                   </div>
                 )}
               </div>

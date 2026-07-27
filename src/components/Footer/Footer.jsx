@@ -1,86 +1,55 @@
 import { Link } from 'react-router-dom';
-import { FiShield, FiGithub, FiTwitter, FiLinkedin, FiHeart } from 'react-icons/fi';
-
-const FOOTER_LINKS = {
-  Tools: [
-    { label: 'Penetration Testing', to: '/search?category=Penetration+Testing' },
-    { label: 'Network Security', to: '/search?category=Network+Security' },
-    { label: 'OSINT', to: '/search?category=OSINT' },
-    { label: 'Malware Analysis', to: '/search?category=Malware+Analysis' },
-  ],
-  Resources: [
-    { label: 'All Categories', to: '/categories' },
-    { label: 'Featured Tools', to: '/search?featured=true' },
-    { label: 'Open Source Only', to: '/search?openSource=true' },
-  ],
-  Platform: [
-    { label: 'Login', to: '/login' },
-    { label: 'Register', to: '/register' },
-  ],
-};
+import { FiShield, FiGithub, FiTwitter } from 'react-icons/fi';
 
 function Footer() {
   return (
-    <footer className="border-t border-cyber-border bg-cyber-dark mt-auto">
-      <div className="section-container py-12">
+    <footer className="border-t border-border bg-background mt-auto">
+      <div className="container-base py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="md:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <FiShield className="text-neon-blue w-6 h-6" />
-              <span className="font-orbitron font-black text-lg">
-                <span className="text-white">CYBER</span>
-                <span className="text-neon-blue">SEARCH</span>
+          <div className="col-span-1 md:col-span-2">
+            <Link to="/" className="flex items-center gap-2 group mb-4">
+              <div className="relative flex items-center justify-center bg-surface p-1.5 rounded-lg border border-border group-hover:border-primary/50 transition-colors">
+                <FiShield className="text-primary w-5 h-5 shadow-glow-sm" />
+              </div>
+              <span className="font-display font-semibold text-lg tracking-tight">
+                <span className="text-text-main">Cyber</span><span className="text-primary font-bold">Search</span>
               </span>
             </Link>
-            <p className="text-cyber-muted text-sm font-rajdhani leading-relaxed">
-              The ultimate directory for cybersecurity tools, resources, and frameworks.
-              Built for security professionals and enthusiasts.
+            <p className="text-text-muted text-sm max-w-xs mb-6">
+              The modern platform for discovering the latest cybersecurity tools, exploits, and frameworks. Built for security professionals.
             </p>
-            {/* Socials */}
-            <div className="flex gap-3 mt-4">
-              {[
-                { icon: FiGithub, href: 'https://github.com', label: 'GitHub' },
-                { icon: FiTwitter, href: 'https://twitter.com', label: 'Twitter' },
-                { icon: FiLinkedin, href: 'https://linkedin.com', label: 'LinkedIn' },
-              ].map(({ icon: Icon, href, label }) => (
-                <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                  className="p-2 text-cyber-muted hover:text-neon-blue border border-cyber-border hover:border-neon-blue rounded-lg transition-all duration-200"
-                  aria-label={label}>
-                  <Icon className="w-4 h-4" />
-                </a>
-              ))}
+            <div className="flex items-center gap-4">
+              <a href="#" className="p-2 bg-surface border border-border rounded-full text-text-muted hover:text-primary hover:border-primary/50 transition-colors">
+                <FiGithub className="w-4 h-4" />
+              </a>
+              <a href="#" className="p-2 bg-surface border border-border rounded-full text-text-muted hover:text-primary hover:border-primary/50 transition-colors">
+                <FiTwitter className="w-4 h-4" />
+              </a>
             </div>
           </div>
-
-          {/* Link columns */}
-          {Object.entries(FOOTER_LINKS).map(([section, links]) => (
-            <div key={section}>
-              <h3 className="font-orbitron text-xs text-neon-blue uppercase tracking-widest mb-4">
-                {section}
-              </h3>
-              <ul className="space-y-2">
-                {links.map((link) => (
-                  <li key={link.label}>
-                    <Link to={link.to}
-                      className="text-sm font-rajdhani text-cyber-muted hover:text-cyber-text transition-colors">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          
+          <div>
+            <h4 className="font-semibold text-text-main mb-4 font-display">Resources</h4>
+            <ul className="space-y-3">
+              <li><Link to="/search" className="text-text-muted hover:text-primary text-sm transition-colors">Search Tools</Link></li>
+              <li><Link to="/categories" className="text-text-muted hover:text-primary text-sm transition-colors">Categories</Link></li>
+              <li><a href="#" className="text-text-muted hover:text-primary text-sm transition-colors">API Documentation</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold text-text-main mb-4 font-display">Company</h4>
+            <ul className="space-y-3">
+              <li><Link to="/about" className="text-text-muted hover:text-primary text-sm transition-colors">About Us</Link></li>
+              <li><a href="#" className="text-text-muted hover:text-primary text-sm transition-colors">Privacy Policy</a></li>
+              <li><a href="#" className="text-text-muted hover:text-primary text-sm transition-colors">Terms of Service</a></li>
+            </ul>
+          </div>
         </div>
-
-        {/* Bottom bar */}
-        <div className="mt-10 pt-6 border-t border-cyber-border flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-cyber-muted text-xs font-rajdhani">
-            © {new Date().getFullYear()} CyberSearch. For educational and ethical use only.
-          </p>
-          <p className="text-cyber-muted text-xs font-rajdhani flex items-center gap-1">
-            Made with <FiHeart className="text-neon-pink w-3 h-3" /> for the security community
-          </p>
+        
+        <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-text-muted">
+          <p>© {new Date().getFullYear()} CyberSearch. All rights reserved.</p>
+          <p className="mt-2 md:mt-0">Designed for modern security engineering.</p>
         </div>
       </div>
     </footer>

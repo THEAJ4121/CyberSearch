@@ -12,12 +12,10 @@ const LoginPage = lazy(() => import('../pages/LoginPage'));
 const RegisterPage = lazy(() => import('../pages/RegisterPage'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'));
 
-// ── 2. SUSPENSE FALLBACK ──
-// Retains UX integrity while Webpack fetches chunked files
 const LoadingFallback = () => (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-[#00FFA3]">
-    <div className="animate-spin h-12 w-12 border-4 border-current border-t-transparent rounded-full mb-4 shadow-[0_0_15px_#00FFA3]" />
-    <span className="font-mono text-xl tracking-widest uppercase">Initializing Node...</span>
+  <div className="flex flex-col items-center justify-center min-h-screen bg-background text-primary">
+    <div className="animate-spin h-10 w-10 border-4 border-current border-t-transparent rounded-full mb-4 opacity-80" />
+    <span className="font-medium text-sm tracking-widest uppercase text-text-muted">Loading Application...</span>
   </div>
 );
 
