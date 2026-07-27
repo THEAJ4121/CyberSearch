@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiSearch, FiArrowRight, FiShield, FiCode, FiEye, FiGlobe } from 'react-icons/fi';
+import { FiSearch, FiShield, FiCode, FiEye, FiGlobe } from 'react-icons/fi';
 
 const ROTATING_WORDS = [
   'Penetration Testing',
@@ -67,30 +67,27 @@ function Hero() {
 
         {/* Main heading */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center justify-center space-y-4"
-        >
-          <h1 className="font-display font-semibold text-5xl sm:text-6xl lg:text-7xl tracking-tight text-text-main">
-            Discover tools for
-          </h1>
-          {/* Rotating word */}
-          <div className="h-16 sm:h-20 lg:h-24 overflow-hidden mb-2 relative w-full flex justify-center">
-            <AnimatePresence mode='wait'>
-              <motion.h1
-                key={wordIndex}
-                initial={{ y: 40, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -40, opacity: 0 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="font-display font-bold text-5xl sm:text-6xl lg:text-7xl text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400 pb-2"
-              >
-                {ROTATING_WORDS[wordIndex]}
-              </motion.h1>
-            </AnimatePresence>
-          </div>
-        </motion.div>
+               initial={{ opacity: 0, scale: 0.95 }}
+               animate={{ opacity: 1, scale: 1 }}
+               transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+               className="flex flex-col items-center justify-center space-y-4"
+             >
+               <h1 className="font-display font-semibold text-5xl sm:text-6xl lg:text-7xl tracking-tight text-text-main">
+                 Discover tools for
+               </h1>
+               {/* Rotating word */}
+               <div className="h-16 sm:h-20 lg:h-24 overflow-hidden mb-2 relative w-full flex justify-center">
+                 <motion.h1
+                     key={wordIndex}
+                     initial={{ y: 40, opacity: 0 }}
+                     animate={{ y: 0, opacity: 1 }}
+                     transition={{ duration: 0.4, ease: "easeOut" }}
+                     className="font-display font-bold text-5xl sm:text-6xl lg:text-7xl text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400 pb-2"
+                   >
+                     {ROTATING_WORDS[wordIndex]}
+                   </motion.h1>
+               </div>
+             </motion.div>
 
         {/* Subtitle */}
         <motion.p
