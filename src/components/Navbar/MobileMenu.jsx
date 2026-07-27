@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { FiSearch, FiX, FiSun, FiMoon, FiLogOut } from 'react-icons/fi';
-import { useTheme } from '../../context/ThemeContext';
+import { FiSearch, FiX, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 
 const NAV_LINKS = [
@@ -11,7 +10,6 @@ const NAV_LINKS = [
 ];
 
 function MobileMenu({ isOpen, setIsOpen }) {
-  const { isDark, toggleTheme } = useTheme();
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -83,20 +81,6 @@ function MobileMenu({ isOpen, setIsOpen }) {
             </nav>
 
             <div className="border-t border-border/50 pt-6 space-y-6">
-              {/* Theme Settings */}
-              <div className="flex items-center justify-between px-2">
-                <div className="flex flex-col">
-                  <span className="text-text-main font-medium">Appearance</span>
-                  <span className="text-text-muted text-xs">Toggle dark theme</span>
-                </div>
-                <button
-                  onClick={toggleTheme}
-                  className="p-2.5 bg-surface rounded-full text-text-main border border-border hover:border-primary/50 transition-colors"
-                >
-                  {isDark ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
-                </button>
-              </div>
-
               {/* Account Section */}
               <div className="px-2">
                 <span className="text-text-muted text-xs font-semibold uppercase tracking-wider mb-3 block">

@@ -7,7 +7,6 @@ import Logo from './Logo';
 import NavLinks from './NavLinks';
 import SearchBar from './SearchBar';
 import CategoriesDropdown from './CategoriesDropdown';
-import ThemeToggle from './ThemeToggle';
 import NotificationMenu from './NotificationMenu';
 import ProfileMenu from './ProfileMenu';
 import MobileMenu from './MobileMenu';
@@ -48,8 +47,6 @@ function Navbar() {
 
               {/* Desktop Actions */}
               <div className="hidden md:flex items-center gap-3 border-l border-border/50 pl-4">
-                <ThemeToggle />
-                
                 {isAuthenticated ? (
                   <div className="flex items-center gap-3 pl-1">
                     <NotificationMenu />
